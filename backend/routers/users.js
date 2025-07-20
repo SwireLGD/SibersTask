@@ -6,9 +6,9 @@ const permit = require('../middleware/Permit');
 const User = require('../models/User');
 const crypto = require('crypto');
 
-const usersRouter = express.Router();
+const users_router = express.Router();
 
-usersRouter.post('/register', async (req, res, next) => {
+users_router.post('/register', async (req, res, next) => {
   try {
     const { username, password, first_name, last_name, gender, birthdate, role } = req.body;
 
@@ -29,7 +29,7 @@ usersRouter.post('/register', async (req, res, next) => {
   }
 });
 
-usersRouter.post('/login', async (req, res, next) => {
+users_router.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
@@ -61,7 +61,7 @@ usersRouter.post('/login', async (req, res, next) => {
   }
 });
 
-usersRouter.get('/', auth, permit(['admin']), async (_req, res, next) => {
+users_router.get('/', auth, permit(['admin']), async (_req, res, next) => {
   try {
     const users = await User.find();
     res.send(users);
@@ -70,7 +70,7 @@ usersRouter.get('/', auth, permit(['admin']), async (_req, res, next) => {
   }
 });
 
-usersRouter.patch('/editUser/:id', auth, permit(['admin']), async (req, res, next) => {
+users_router.patch('/editUser/:id', auth, permit(['admin']), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { first_name, last_name, gender, birthdate, role } = req.body;
@@ -91,7 +91,7 @@ usersRouter.patch('/editUser/:id', auth, permit(['admin']), async (req, res, nex
   }
 });
 
-usersRouter.patch('/toggleRoleChange/:id', auth, permit(['admin']), async (req, res, next) => {
+users_router.patch('/toggleRoleChange/:id', auth, permit(['admin']), async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -106,7 +106,7 @@ usersRouter.patch('/toggleRoleChange/:id', auth, permit(['admin']), async (req, 
   }
 });
 
-usersRouter.get('/refresh', async (req, res, next) => {
+users_router.get('/refresh', async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.status(401).send({ error: 'No refresh token' });
@@ -139,7 +139,7 @@ usersRouter.get('/refresh', async (req, res, next) => {
   }
 });
 
-usersRouter.delete('/logout', (req, res, next) => {
+users_router.delete('/logout', (req, res, next) => {
   try {
     res.cookie('refreshToken', '', {
       httpOnly: true,
@@ -151,4 +151,4 @@ usersRouter.delete('/logout', (req, res, next) => {
   }
 });
 
-module.exports = usersRouter;
+module.exports = users_router;
