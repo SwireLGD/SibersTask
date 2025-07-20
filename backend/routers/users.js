@@ -46,11 +46,11 @@ users_router.post('/login', async (req, res, next) => {
     const accessToken = jwt.sign({ user: user._id }, process.env.JWT_ACCESS, {
       expiresIn: '15m',
     });
-    const refreshToken = jwt.sign({ user: user._id }, process.env.JWT_REFRESH, {
+    const refresh_token = jwt.sign({ user: user._id }, process.env.JWT_REFRESH, {
       expiresIn: '7d',
     });
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -70,7 +70,7 @@ users_router.get('/', auth, permit(['admin']), async (_req, res, next) => {
   }
 });
 
-users_router.patch('/editUser/:id', auth, permit(['admin']), async (req, res, next) => {
+users_router.patch('/edit_user/:id', auth, permit(['admin']), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { first_name, last_name, gender, birthdate, role } = req.body;
@@ -91,7 +91,7 @@ users_router.patch('/editUser/:id', auth, permit(['admin']), async (req, res, ne
   }
 });
 
-users_router.patch('/toggleRoleChange/:id', auth, permit(['admin']), async (req, res, next) => {
+users_router.patch('/toggle_role_change/:id', auth, permit(['admin']), async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -108,12 +108,12 @@ users_router.patch('/toggleRoleChange/:id', auth, permit(['admin']), async (req,
 
 users_router.get('/refresh', async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).send({ error: 'No refresh token' });
+    const refresh_token = req.cookies.refresh_token;
+    if (!refresh_token) return res.status(401).send({ error: 'No refresh token' });
 
     let decoded;
     try {
-      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH);
+      decoded = jwt.verify(refresh_token, process.env.JWT_REFRESH);
     } catch (e) {
       return res.status(401).send({ error: 'Invalid refresh token' });
     }
@@ -124,11 +124,11 @@ users_router.get('/refresh', async (req, res, next) => {
     const accessToken = jwt.sign({ user: user._id }, process.env.JWT_ACCESS, {
       expiresIn: '15m',
     });
-    const newRefreshToken = jwt.sign({ user: user._id }, process.env.JWT_REFRESH, {
+    const newrefresh_token = jwt.sign({ user: user._id }, process.env.JWT_REFRESH, {
       expiresIn: '7d',
     });
 
-    res.cookie('refreshToken', newRefreshToken, {
+    res.cookie('refresh_token', newrefresh_token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -141,7 +141,7 @@ users_router.get('/refresh', async (req, res, next) => {
 
 users_router.delete('/logout', (req, res, next) => {
   try {
-    res.cookie('refreshToken', '', {
+    res.cookie('refresh_token', '', {
       httpOnly: true,
       maxAge: 0,
     });
