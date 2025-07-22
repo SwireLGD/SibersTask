@@ -1,13 +1,19 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админ-панель</title>
+  <link rel="stylesheet" href="./css/admin.css">
 </head>
 <body>
-  <h2>Пользователи</h2>
-  <button onclick="logout()">Выйти</button>
+  <div class="container">
+  <header>
+    <h2>Пользователи</h2>
+    <button onclick="logout()" class="leave_btn">Выйти</button>
+  </header>
 
-  <table id="user-table">
+  <table id="user_table">
       <thead>
           <tr>
               <th>Имя</th>
@@ -24,17 +30,17 @@
 
   <h3>Добавить нового пользователя</h3>
   <form id="register_form">
-      <input type="text" placeholder="Логин" name="username" required />
-      <input type="text" placeholder="Пароль" name="password" required />
-      <input type="text" placeholder="Имя" name="first_name" required />
-      <input type="text" placeholder="Фамилия" name="last_name" required />
+      <input type="text" placeholder="Логин" name="username" required>
+      <input type="text" placeholder="Пароль" name="password" required>
+      <input type="text" placeholder="Имя" name="first_name" required>
+      <input type="text" placeholder="Фамилия" name="last_name" required>
       <select name="gender" required>
         <option value="">Пол</option>
         <option value="male">Мужской</option>
         <option value="female">Женский</option>
         <option value="other">Другое</option>
       </select>
-      <input type="date" name="birthdate" required />
+      <input type="date" name="birthdate" required>
       <select name="role">
         <option value="">Роль</option>
         <option value="user">User</option>
@@ -44,5 +50,6 @@
   </form>
 
   <script src="./scripts/admin.js"></script>
+  </div>
 </body>
 </html>

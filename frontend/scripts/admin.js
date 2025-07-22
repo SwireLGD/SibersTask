@@ -32,7 +32,7 @@ const fetch_users = async (url, options = {}) => {
 const load_users = async () => {
     const res = await fetch_users('/users');
     const users = await res.json();
-    const tbody = document.querySelector('#user-table tbody');
+    const tbody = document.querySelector('#user_table tbody');
     tbody.innerHTML = '';
 
     users.forEach(user => {
