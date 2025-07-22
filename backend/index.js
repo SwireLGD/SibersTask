@@ -8,10 +8,12 @@ const cookie_parser = require('cookie-parser');
 const app = express();
 const port = 8080;
 
-app.use(cors({
-  origin: 'http://127.0.0.1:5500',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: 'http://127.0.0.1:5500',
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.static('public'));
 app.use(cookie_parser());

@@ -61,11 +61,24 @@ users_router.post('/login', async (req, res, next) => {
   }
 });
 
-
-users_router.get('/', auth, permit(['admin']), async (_req, res, next) => {
+users_router.get('/', auth, permit(['admin']), async (req, res, next) => {
   try {
-    const users = await User.find();
-    res.send(users);
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const sortField = req.query.sortBy || 'first_name';
+    const sortOrder = req.query.order === 'desc' ? -1 : 1;
+
+    const [users, total] = await Promise.all([
+      User.find()
+        .sort({ [sortField]: sortOrder })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(),
+    ]);
+
+    res.send({ users, total });
   } catch (e) {
     next(e);
   }
@@ -109,23 +122,19 @@ users_router.patch('/toggle_role_change/:id', auth, permit(['admin']), async (re
 
 const user_refresh_token = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user?._id); 
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
       return res.status(404).send({ error: 'User not found' });
     }
 
-    const accessToken = jwt.sign(
-      { user: req.user._id },
-      process.env.JWT_ACCESS,
-      { expiresIn: '15m' }
-    );
+    const accessToken = jwt.sign({ user: req.user._id }, process.env.JWT_ACCESS, {
+      expiresIn: '15m',
+    });
 
-    const refreshToken = jwt.sign(
-      { user: req.user._id },
-      process.env.JWT_REFRESH,
-      { expiresIn: '7d' } 
-    );
+    const refreshToken = jwt.sign({ user: req.user._id }, process.env.JWT_REFRESH, {
+      expiresIn: '7d',
+    });
 
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,

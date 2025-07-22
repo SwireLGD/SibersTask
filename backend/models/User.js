@@ -37,7 +37,7 @@ const UserSchema = new mongoose.Schema(
       default: 'user',
     },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 UserSchema.methods.checkPassword = function (password) {
