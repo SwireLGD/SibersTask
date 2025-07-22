@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ['Мужчина', 'Женщина', 'Другое'],
+      enum: ['male', 'female', 'other'],
       required: [true, 'Укажите пол!'],
     },
     birthdate: {

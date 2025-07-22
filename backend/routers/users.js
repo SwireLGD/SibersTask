@@ -1,14 +1,14 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const config = require('../config/config');
 const auth = require('../middleware/Auth');
 const permit = require('../middleware/Permit');
 const User = require('../models/User');
 const crypto = require('crypto');
+const verify_refresh_token = require('../middleware/Verify_refresh_token');
 
 const users_router = express.Router();
 
-users_router.post('/register', async (req, res, next) => {
+users_router.post('/register', auth, permit(['admin']), async (req, res, next) => {
   try {
     const { username, password, first_name, last_name, gender, birthdate, role } = req.body;
 
@@ -61,6 +61,7 @@ users_router.post('/login', async (req, res, next) => {
   }
 });
 
+
 users_router.get('/', auth, permit(['admin']), async (_req, res, next) => {
   try {
     const users = await User.find();
@@ -106,29 +107,27 @@ users_router.patch('/toggle_role_change/:id', auth, permit(['admin']), async (re
   }
 });
 
-users_router.get('/refresh', async (req, res, next) => {
+const user_refresh_token = async (req, res, next) => {
   try {
-    const refresh_token = req.cookies.refresh_token;
-    if (!refresh_token) return res.status(401).send({ error: 'No refresh token' });
+    const user = await User.findById(req.user?._id); 
 
-    let decoded;
-    try {
-      decoded = jwt.verify(refresh_token, process.env.JWT_REFRESH);
-    } catch (e) {
-      return res.status(401).send({ error: 'Invalid refresh token' });
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
     }
 
-    const user = await User.findById(decoded.user);
-    if (!user) return res.status(403).send({ error: 'Wrong token' });
+    const accessToken = jwt.sign(
+      { user: req.user._id },
+      process.env.JWT_ACCESS,
+      { expiresIn: '15m' }
+    );
 
-    const accessToken = jwt.sign({ user: user._id }, process.env.JWT_ACCESS, {
-      expiresIn: '15m',
-    });
-    const newrefresh_token = jwt.sign({ user: user._id }, process.env.JWT_REFRESH, {
-      expiresIn: '7d',
-    });
+    const refreshToken = jwt.sign(
+      { user: req.user._id },
+      process.env.JWT_REFRESH,
+      { expiresIn: '7d' } 
+    );
 
-    res.cookie('refresh_token', newrefresh_token, {
+    res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -137,7 +136,7 @@ users_router.get('/refresh', async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-});
+};
 
 users_router.delete('/logout', (req, res, next) => {
   try {
@@ -150,5 +149,18 @@ users_router.delete('/logout', (req, res, next) => {
     next(e);
   }
 });
+
+users_router.delete('/:id', auth, permit(['admin']), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) return res.status(404).send({ error: 'Пользователь не найден' });
+    res.send({ message: 'Пользователь удалён' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+users_router.get('/refresh', verify_refresh_token, user_refresh_token);
 
 module.exports = users_router;

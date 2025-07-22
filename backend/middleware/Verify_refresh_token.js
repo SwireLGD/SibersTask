@@ -1,25 +1,24 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const auth = async (req, res, next) => {
-  const tokenData = req.get('Authorization');
+const verify_refresh_token = async (req, res, next) => {
+    const refreshToken = req.cookies.refresh_token;
 
-  if (!tokenData) return res.status(401).send({ error: 'No token provided' });
+    if (!refreshToken) return res.status(401).send({ error: 'No refresh token' });
 
-  const [, token] = tokenData.split(' ');
-  let decoded;
-  try {
-    decoded = jwt.verify(token, process.env.JWT_ACCESS);
-  } catch (e) {
-    return res.status(401).send({ error: 'Unauthorized' });
-  }
+    let decoded;
+    try {
+        decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH);
+    } catch (e) {
+        console.error('JWT verification failed:', e);
+        return res.status(401).send({ error: 'Invalid refresh token' });
+    }
 
-  const user = await User.findOne({ _id: decoded.user });
+    const user = await User.findById(decoded.user);
+    if (!user) return res.status(403).send({ error: 'User not found' });
 
-  if (!user) return res.status(403).send({ error: 'Wrong token' });
-
-  req.user = user;
-  next();
+    req.user = user;
+    next();
 };
 
-module.exports = auth;
+module.exports = verify_refresh_token;
